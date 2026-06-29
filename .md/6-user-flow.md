@@ -1,6 +1,6 @@
 # User Flow
 
-Login
+Open web app
 
 ↓
 
