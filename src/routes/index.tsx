@@ -86,6 +86,7 @@ function LifeOS() {
   });
   const [streak] = useState(7);
   const [page, setPage] = useState<Page>('dashboard');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({habits, totalXP, streak, lastDate: today}));
@@ -120,7 +121,15 @@ function LifeOS() {
 
   return (
     <div className="app">
-      <aside className="sidebar">
+      <div className="mobile-topbar">
+        <button className="menu-btn" onClick={()=>setSidebarOpen(true)}>☰</button>
+        <div className="logo" style={{margin:0, padding:0}}>
+          <div className="logo-icon" style={{width:28,height:28,fontSize:14}}>⚡</div>
+          <div className="logo-text" style={{fontSize:18}}>LifeOS</div>
+        </div>
+      </div>
+      {sidebarOpen && <div className="sidebar-overlay" onClick={()=>setSidebarOpen(false)} />}
+      <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
         <div className="logo">
           <div className="logo-icon">⚡</div>
           <div>
@@ -129,15 +138,15 @@ function LifeOS() {
           </div>
         </div>
         <div className="nav-section">Main</div>
-        <NavBtn icon="📊" label="Dashboard" active={page==='dashboard'} onClick={()=>setPage('dashboard')}/>
-        <NavBtn icon="✅" label="Today's Match" active={page==='checklist'} onClick={()=>setPage('checklist')}/>
-        <NavBtn icon="📈" label="Analytics" active={page==='analytics'} onClick={()=>setPage('analytics')}/>
+        <NavBtn icon="📊" label="Dashboard" active={page==='dashboard'} onClick={()=>{setPage('dashboard');setSidebarOpen(false);}}/>
+        <NavBtn icon="✅" label="Today's Match" active={page==='checklist'} onClick={()=>{setPage('checklist');setSidebarOpen(false);}}/>
+        <NavBtn icon="📈" label="Analytics" active={page==='analytics'} onClick={()=>{setPage('analytics');setSidebarOpen(false);}}/>
         <div className="nav-section">Personal</div>
-        <NavBtn icon="🏆" label="Achievements" active={page==='achievements'} onClick={()=>setPage('achievements')}/>
-        <NavBtn icon="📝" label="Reflection" active={page==='reflection'} onClick={()=>setPage('reflection')}/>
-        <NavBtn icon="📅" label="Calendar" active={page==='calendar'} onClick={()=>setPage('calendar')}/>
+        <NavBtn icon="🏆" label="Achievements" active={page==='achievements'} onClick={()=>{setPage('achievements');setSidebarOpen(false);}}/>
+        <NavBtn icon="📝" label="Reflection" active={page==='reflection'} onClick={()=>{setPage('reflection');setSidebarOpen(false);}}/>
+        <NavBtn icon="📅" label="Calendar" active={page==='calendar'} onClick={()=>{setPage('calendar');setSidebarOpen(false);}}/>
         <div className="nav-section">System</div>
-        <NavBtn icon="⚙️" label="Settings" active={page==='settings'} onClick={()=>setPage('settings')}/>
+        <NavBtn icon="⚙️" label="Settings" active={page==='settings'} onClick={()=>{setPage('settings');setSidebarOpen(false);}}/>
         <div className="sidebar-bottom">
           <div className="level-card">
             <div className="level-label">Current Level</div>
@@ -302,8 +311,10 @@ function Dashboard(p: any) {
           <div style={{fontSize:11,color:'var(--text3)'}}>Last 98 days</div>
         </div>
         <div className="chart-card">
-          <div className="heatmap-grid">
-            {heatmap.map((lvl,i)=><div key={i} className={`hm-cell hm-${lvl}`}/>)}
+          <div style={{overflowX:'auto', paddingBottom:8}}>
+            <div className="heatmap-grid" style={{minWidth: 500}}>
+              {heatmap.map((lvl,i)=><div key={i} className={`hm-cell hm-${lvl}`}/>)}
+            </div>
           </div>
           <div style={{display:'flex',alignItems:'center',gap:6,marginTop:10}}>
             <span style={{fontSize:11,color:'var(--text3)'}}>Less</span>
@@ -436,7 +447,7 @@ function Analytics() {
           <div key={t} className={`tab${tab===t?' active':''}`} onClick={()=>setTab(t)}>{t[0].toUpperCase()+t.slice(1)}</div>
         ))}
       </div>
-      <div className="analytics-grid" style={{gridTemplateColumns:'1fr 1fr'}}>
+      <div className="analytics-grid analytics-grid-2">
         <div className="chart-card">
           <div className="chart-title">XP Trend — This Week</div>
           <div className="chart-sub">Daily XP score per day</div>
@@ -448,7 +459,7 @@ function Analytics() {
           <div style={{position:'relative',height:160}}><canvas ref={habitRef}/></div>
         </div>
       </div>
-      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr 1fr',gap:12,marginBottom:20}}>
+      <div className="stats-grid">
         <div className="hero-card"><div className="card-label">Avg Score</div><div className="card-value" style={{color:'var(--blue)'}}>178</div><div className="card-sub">This week</div></div>
         <div className="hero-card"><div className="card-label">Best Day</div><div className="card-value" style={{color:'var(--emerald)'}}>Tue</div><div className="card-sub">245 XP</div></div>
         <div className="hero-card"><div className="card-label">Good Habits</div><div className="card-value" style={{color:'var(--emerald)'}}>78%</div><div className="card-sub">of checklist</div></div>
@@ -467,7 +478,7 @@ function Achievements() {
   return (
     <div>
       <div className="header"><div><div className="greeting">Achievements 🏆</div><div className="header-sub">Unlock badges by building habits</div></div></div>
-      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:12}}>
+      <div className="achievements-grid">
         {ACHS.map(a=>(
           <div key={a.id} style={{background:'var(--bg2)',border:`1px solid ${a.unlocked?'#eab30844':'var(--border)'}`,borderRadius:'var(--radius-lg)',padding:20,opacity:a.unlocked?1:.6}}>
             <div style={{fontSize:32,marginBottom:10}}>{a.icon}</div>
@@ -529,7 +540,7 @@ function Calendar() {
     <div>
       <div className="header"><div><div className="greeting">Calendar 📅</div><div className="header-sub">Your activity history</div></div></div>
       <div className="chart-card">
-        <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:4}}>
+        <div className="calendar-grid">
           {dayNames.map(d=><div key={d} style={{fontSize:11,color:'var(--text3)',fontWeight:600,textAlign:'center',padding:'4px 0'}}>{d}</div>)}
           {cells.map((d,i)=>{
             if (d===null) return <div key={i}/>;

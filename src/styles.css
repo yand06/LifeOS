@@ -138,3 +138,54 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Inter',sans-serif;background:
 .tab{padding:6px 14px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;color:var(--text2);transition:all .15s}
 .tab.active{background:var(--bg2);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.3)}
 .divider{height:1px;background:var(--border);margin:4px 0}
+
+/* Mobile Top Bar & Sidebar Overlay */
+.mobile-topbar { display: none; }
+.sidebar-overlay { display: none; }
+.menu-btn { background: none; border: none; color: var(--text); font-size: 24px; cursor: pointer; padding: 0 8px; }
+
+/* Grid definitions */
+.analytics-grid-2 { grid-template-columns: 1fr 1fr; }
+.stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+.achievements-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+.calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+
+/* Media Queries for Tablets */
+@media (max-width: 1024px) {
+  .hero-grid { grid-template-columns: 1fr 1fr; }
+  .analytics-grid { grid-template-columns: 1fr 1fr; }
+  .analytics-grid-2 { grid-template-columns: 1fr 1fr; }
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+  .achievements-grid { grid-template-columns: 1fr 1fr; }
+}
+
+/* Media Queries for Mobile */
+@media (max-width: 768px) {
+  .app { flex-direction: column; }
+  .sidebar {
+    position: fixed; top: 0; left: -280px; width: 280px; height: 100vh;
+    z-index: 50; transition: left 0.3s ease; box-shadow: 2px 0 10px rgba(0,0,0,0.5);
+  }
+  .sidebar.open { left: 0; }
+  .sidebar-overlay {
+    display: block; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5); z-index: 45; backdrop-filter: blur(2px);
+  }
+  .mobile-topbar {
+    display: flex; align-items: center; gap: 12px; padding: 12px 20px;
+    background: var(--bg2); border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 40;
+  }
+  .main { padding: 16px; }
+  .hero-grid { grid-template-columns: 1fr; }
+  .hero-card.match-card { grid-column: span 1; }
+  .checklist-grid { grid-template-columns: 1fr; }
+  .analytics-grid { grid-template-columns: 1fr; }
+  .analytics-grid-2 { grid-template-columns: 1fr; }
+  .stats-grid { grid-template-columns: 1fr; }
+  .achievements-grid { grid-template-columns: 1fr; }
+  .refl-row { grid-template-columns: 1fr; }
+  .header { flex-direction: column; gap: 12px; align-items: flex-start; }
+  .header-right { width: 100%; display: flex; justify-content: space-between; }
+  .mini-stats { justify-content: space-between; width: 100%; }
+}
