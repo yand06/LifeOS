@@ -2,7 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Chart, registerables } from "chart.js";
 import {
-  Sunrise, MoonStar, Dumbbell, ShowerHead, BookOpen, Laptop, Globe, Edit3, Moon, Droplet, Salad, Target, Utensils, Building, Coffee, Smartphone, Tv, Flame, Trophy, Ban, ShieldCheck, CheckCircle, Zap, Activity, BarChart2, CheckSquare, LineChart, Award, FileText, Calendar as CalendarIcon, Settings as SettingsIcon, Menu, LayoutDashboard, AlertTriangle, Check, Lock, Frown, Meh, Smile, Download, Upload, Trash2
+  Sunrise, MoonStar, Dumbbell, ShowerHead, BookOpen, Laptop, Globe, Edit3, Moon, Droplet, Salad, Target, Utensils, Building, Coffee, Smartphone, Tv, Flame, Trophy, Ban, ShieldCheck, CheckCircle, Zap, Activity, BarChart2, CheckSquare, LineChart, Award, FileText, Calendar as CalendarIcon, Settings as SettingsIcon, Menu, LayoutDashboard, AlertTriangle, Check, Lock, Frown, Meh, Smile, Download, Upload, Trash2,
+  Sun, MonitorSmartphone
 } from 'lucide-react';
 
 const renderIcon = (iconStr: string, size = 16, className = "") => {
@@ -33,26 +34,26 @@ type Cat = "good" | "bad" | "natural";
 interface Habit { id: number; title: string; cat: Cat; xp: number; icon: string; done: boolean }
 
 const DEFAULT_HABITS: Habit[] = [
-  {id:1,title:'Bangun sebelum 05:30',cat:'good',xp:25,icon:'🌅',done:false},
-  {id:2,title:'Sholat Subuh tepat waktu',cat:'good',xp:20,icon:'🕌',done:false},
-  {id:3,title:'Workout 30 menit',cat:'good',xp:30,icon:'💪',done:false},
-  {id:4,title:'Mandi pagi sebelum 08:00',cat:'good',xp:10,icon:'🚿',done:false},
-  {id:5,title:'Membaca buku 30 menit',cat:'good',xp:30,icon:'📚',done:false},
-  {id:6,title:'Coding 120 menit',cat:'good',xp:50,icon:'💻',done:false},
-  {id:7,title:'Belajar Bahasa Inggris 20 menit',cat:'good',xp:20,icon:'🌐',done:false},
-  {id:8,title:'Menulis jurnal harian',cat:'good',xp:15,icon:'✍️',done:false},
-  {id:9,title:'Tidur sebelum jam 23:00',cat:'good',xp:25,icon:'😴',done:false},
-  {id:10,title:'Minum air minimal 2 Liter',cat:'good',xp:15,icon:'💧',done:false},
-  {id:11,title:'Makan makanan sehat',cat:'good',xp:20,icon:'🥗',done:false},
-  {id:12,title:'Tidak menunda pekerjaan',cat:'good',xp:20,icon:'🎯',done:false},
-  {id:13,title:'Sarapan',cat:'natural',xp:5,icon:'🍳',done:false},
-  {id:14,title:'Makan siang',cat:'natural',xp:5,icon:'🍱',done:false},
-  {id:15,title:'Makan malam',cat:'natural',xp:5,icon:'🍽️',done:false},
-  {id:16,title:'Pergi bekerja',cat:'natural',xp:10,icon:'🏢',done:false},
-  {id:17,title:'Istirahat siang',cat:'natural',xp:5,icon:'😌',done:false},
-  {id:18,title:'Scroll media sosial >60 menit',cat:'bad',xp:-40,icon:'📱',done:false},
-  {id:19,title:'Menonton YouTube tanpa tujuan >1 jam',cat:'bad',xp:-20,icon:'📺',done:false},
-  {id:20,title:'Begadang',cat:'bad',xp:-30,icon:'🌙',done:false},
+  { id: 1, title: 'Bangun sebelum 05:30', cat: 'good', xp: 25, icon: '🌅', done: false },
+  { id: 2, title: 'Sholat Subuh tepat waktu', cat: 'good', xp: 20, icon: '🕌', done: false },
+  { id: 3, title: 'Workout 30 menit', cat: 'good', xp: 30, icon: '💪', done: false },
+  { id: 4, title: 'Mandi pagi sebelum 08:00', cat: 'good', xp: 10, icon: '🚿', done: false },
+  { id: 5, title: 'Membaca buku 30 menit', cat: 'good', xp: 30, icon: '📚', done: false },
+  { id: 6, title: 'Coding 120 menit', cat: 'good', xp: 50, icon: '💻', done: false },
+  { id: 7, title: 'Belajar Bahasa Inggris 20 menit', cat: 'good', xp: 20, icon: '🌐', done: false },
+  { id: 8, title: 'Menulis jurnal harian', cat: 'good', xp: 15, icon: '✍️', done: false },
+  { id: 9, title: 'Tidur sebelum jam 23:00', cat: 'good', xp: 25, icon: '😴', done: false },
+  { id: 10, title: 'Minum air minimal 2 Liter', cat: 'good', xp: 15, icon: '💧', done: false },
+  { id: 11, title: 'Makan makanan sehat', cat: 'good', xp: 20, icon: '🥗', done: false },
+  { id: 12, title: 'Tidak menunda pekerjaan', cat: 'good', xp: 20, icon: '🎯', done: false },
+  { id: 13, title: 'Sarapan', cat: 'natural', xp: 5, icon: '🍳', done: false },
+  { id: 14, title: 'Makan siang', cat: 'natural', xp: 5, icon: '🍱', done: false },
+  { id: 15, title: 'Makan malam', cat: 'natural', xp: 5, icon: '🍽️', done: false },
+  { id: 16, title: 'Pergi bekerja', cat: 'natural', xp: 10, icon: '🏢', done: false },
+  { id: 17, title: 'Istirahat siang', cat: 'natural', xp: 5, icon: '😌', done: false },
+  { id: 18, title: 'Scroll media sosial >60 menit', cat: 'bad', xp: -40, icon: '📱', done: false },
+  { id: 19, title: 'Menonton YouTube tanpa tujuan >1 jam', cat: 'bad', xp: -20, icon: '📺', done: false },
+  { id: 20, title: 'Begadang', cat: 'bad', xp: -30, icon: '🌙', done: false },
 ];
 
 const ACHS = [
@@ -84,6 +85,7 @@ function getLevelProgress(xp: number) {
   return { pct: Math.round((xp - cur) / (next - cur) * 100), toNext: next - xp, next };
 }
 
+type Theme = 'system' | 'light' | 'dark';
 type Page = 'dashboard' | 'checklist' | 'analytics' | 'achievements' | 'reflection' | 'calendar' | 'settings';
 
 function LifeOS() {
@@ -111,6 +113,30 @@ function LifeOS() {
   });
   const [page, setPage] = useState<Page>('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // ── Theme ──────────────────────────────────────────────────
+  const [theme, setThemeState] = useState<Theme>(() =>
+    (localStorage.getItem('lifeos_theme') as Theme) || 'system'
+  );
+
+  const setTheme = (t: Theme) => {
+    setThemeState(t);
+    localStorage.setItem('lifeos_theme', t);
+  };
+
+  useEffect(() => {
+    const apply = () => {
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const isDark = theme === 'dark' || (theme === 'system' && prefersDark);
+      document.documentElement.classList.toggle('dark', isDark);
+      document.documentElement.classList.toggle('light', !isDark);
+    };
+    apply();
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    mq.addEventListener('change', apply);
+    return () => mq.removeEventListener('change', apply);
+  }, [theme]);
+  // ──────────────────────────────────────────────────────────
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ habits, totalXP, streak, lastDate: today }));
@@ -187,6 +213,12 @@ function LifeOS() {
             <div className="xp-bar-bg"><div className="xp-bar-fill" style={{ width: `${lvp.pct}%` }} /></div>
             <div className="xp-text">{totalXP} / {lvp.next} XP</div>
           </div>
+          {/* Theme quick-toggle */}
+          <div className="sidebar-theme-toggle">
+            <button title="System" className={theme === 'system' ? 'active' : ''} onClick={() => setTheme('system')}><MonitorSmartphone size={15} /></button>
+            <button title="Light" className={theme === 'light' ? 'active' : ''} onClick={() => setTheme('light')}><Sun size={15} /></button>
+            <button title="Dark" className={theme === 'dark' ? 'active' : ''} onClick={() => setTheme('dark')}><Moon size={15} /></button>
+          </div>
           <div style={{ fontSize: 11, color: 'var(--text3)', textAlign: 'center', padding: 4 }}>v1.0.0 · LifeOS</div>
         </div>
       </aside>
@@ -198,11 +230,11 @@ function LifeOS() {
         {page === 'checklist' && (
           <Checklist {...{ score, rank, doneCount, pct, goodDone, badDone, naturalDone, habits, toggle, addHabit }} />
         )}
-        {page === 'analytics' && <Analytics {...{score, goodDone, badDone, habits, dateStr}} />}
+        {page === 'analytics' && <Analytics {...{ score, goodDone, badDone, habits, dateStr }} />}
         {page === 'achievements' && <Achievements />}
         {page === 'reflection' && <Reflection onSave={() => setTotalXP(x => x + 15)} />}
         {page === 'calendar' && <Calendar score={score} />}
-        {page === 'settings' && <Settings />}
+        {page === 'settings' && <Settings theme={theme} setTheme={setTheme} />}
       </main>
     </div>
   );
@@ -249,7 +281,7 @@ function Dashboard(p: any) {
     <div>
       <div className="header">
         <div>
-          <div className="greeting">Good morning, La Awe 👋</div>
+          <div className="greeting">Good Morning, La Awe 👋</div>
           <div className="header-sub">{dateStr}</div>
         </div>
         <div className="header-right">
@@ -606,7 +638,7 @@ function Calendar({ score }: { score?: number }) {
       <div className="header"><div><div className="greeting">Calendar</div><div className="header-sub">Your activity history</div></div></div>
       <div className="chart-card">
         <div className="calendar-grid">
-          {dayNames.map(d => <div key={d} style={{ fontSize: 11, color: 'var(--text3)', fontWeight: 600, textAlign: 'center', padding: '4px 0' }}>{d}</div>)}
+          {dayNames.map(d => <div key={d} className="calendar-header-day" style={{ textAlign: 'center', padding: '4px 0' }}>{d}</div>)}
           {cells.map((d, i) => {
             if (d === null) return <div key={i} />;
             const isToday = d === todayD;
@@ -619,30 +651,94 @@ function Calendar({ score }: { score?: number }) {
   );
 }
 
-function Settings() {
+function Settings({ theme, setTheme }: { theme: Theme; setTheme: (t: Theme) => void }) {
   const exp = () => {
     const data = localStorage.getItem(STORAGE_KEY) || '{}';
     const blob = new Blob([data], { type: 'application/json' });
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'lifeos-backup.json'; a.click();
   };
   const reset = () => { if (confirm('Delete ALL LifeOS data?')) { localStorage.removeItem(STORAGE_KEY); location.reload(); } };
-  const btn: React.CSSProperties = { background: 'var(--bg3)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', padding: 12, color: 'var(--text)', cursor: 'pointer', fontSize: 13, fontWeight: 500, textAlign: 'left' };
+
+  const rowBtn: React.CSSProperties = {
+    display: 'flex', alignItems: 'center', gap: 10,
+    background: 'var(--bg3)', border: '1px solid var(--border)',
+    borderRadius: 'var(--radius-sm)', padding: '12px 16px',
+    color: 'var(--text)', cursor: 'pointer',
+    fontSize: 13, fontWeight: 500, textAlign: 'left', width: '100%',
+    transition: 'background 0.15s',
+  };
+
+  const themeOptions: { key: Theme; icon: React.ReactNode; label: string }[] = [
+    { key: 'system', icon: <MonitorSmartphone size={18} />, label: 'System' },
+    { key: 'light', icon: <Sun size={18} />, label: 'Light' },
+    { key: 'dark', icon: <Moon size={18} />, label: 'Dark' },
+  ];
+
   return (
     <div>
-      <div className="header"><div><div className="greeting">Settings</div><div className="header-sub">Manage your LifeOS data</div></div></div>
-      <div className="reflection-card" style={{ maxWidth: 480 }}>
-        <div style={{ marginBottom: 20 }}>
-          <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>Storage</div>
-          <div style={{ fontSize: 12, color: 'var(--text3)' }}>Using local browser storage</div>
+      <div className="header">
+        <div>
+          <div className="greeting">Settings</div>
+          <div className="header-sub">Appearance &amp; data management</div>
         </div>
-        <div className="divider" style={{ marginBottom: 16 }} />
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <button onClick={exp} style={{ ...btn, display: 'flex', alignItems: 'center', gap: 8 }}><Upload size={16} /> Export JSON Backup</button>
-          <button onClick={() => alert('Select a LifeOS JSON backup file to import.')} style={{ ...btn, display: 'flex', alignItems: 'center', gap: 8 }}><Download size={16} /> Import JSON Backup</button>
-          <div className="divider" />
-          <button onClick={reset} style={{ ...btn, display: 'flex', alignItems: 'center', gap: 8, border: '1px solid #ef444444', color: 'var(--red-l)', background: 'var(--red-d)' }}><Trash2 size={16} /> Factory Reset</button>
+      </div>
+
+      {/* ── Appearance ── */}
+      <div className="settings-section" style={{ maxWidth: 520, marginBottom: 16 }}>
+        <div className="settings-section-title">Appearance</div>
+        <div style={{ marginBottom: 10, fontSize: 13, color: 'var(--text2)', fontWeight: 500 }}>Theme</div>
+        <div className="appearance-toggle">
+          {themeOptions.map(({ key, icon, label }) => (
+            <button
+              key={key}
+              className={theme === key ? 'active' : ''}
+              onClick={() => setTheme(key)}
+              title={label}
+            >
+              {icon}
+              {label}
+            </button>
+          ))}
         </div>
-        <div style={{ marginTop: 20, fontSize: 11, color: 'var(--text3)', textAlign: 'center' }}>LifeOS v1.0.0 · All data stored locally · No server, no tracking</div>
+        <div style={{ marginTop: 12, fontSize: 11, color: 'var(--text3)' }}>
+          {theme === 'system' ? '🖥 Follows your device preference automatically.' :
+            theme === 'light' ? '☀️ Always light — iOS 26 bright glass.' :
+              '🌙 Always dark — deep space glass.'}
+        </div>
+      </div>
+
+      {/* ── Data ── */}
+      <div className="settings-section" style={{ maxWidth: 520 }}>
+        <div className="settings-section-title">Data &amp; Storage</div>
+        <div style={{ fontSize: 12, color: 'var(--text3)', marginBottom: 14 }}>All data is stored locally in your browser. Nothing is sent to any server.</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <button onClick={exp} style={rowBtn}>
+            <Upload size={16} style={{ color: 'var(--blue)' }} />
+            <div>
+              <div style={{ fontWeight: 600 }}>Export Backup</div>
+              <div style={{ fontSize: 11, color: 'var(--text3)', marginTop: 1 }}>Download your data as JSON</div>
+            </div>
+          </button>
+          <button onClick={() => alert('Select a LifeOS JSON backup file to import.')} style={rowBtn}>
+            <Download size={16} style={{ color: 'var(--emerald)' }} />
+            <div>
+              <div style={{ fontWeight: 600 }}>Import Backup</div>
+              <div style={{ fontSize: 11, color: 'var(--text3)', marginTop: 1 }}>Restore from a JSON file</div>
+            </div>
+          </button>
+          <div className="divider" style={{ margin: '4px 0' }} />
+          <button
+            onClick={reset}
+            style={{ ...rowBtn, border: '1px solid rgba(248,113,113,0.25)', background: 'var(--red-d)' }}
+          >
+            <Trash2 size={16} style={{ color: 'var(--red)' }} />
+            <div>
+              <div style={{ fontWeight: 600, color: 'var(--red)' }}>Factory Reset</div>
+              <div style={{ fontSize: 11, color: 'var(--text3)', marginTop: 1 }}>Delete all LifeOS data permanently</div>
+            </div>
+          </button>
+        </div>
+        <div style={{ marginTop: 20, fontSize: 11, color: 'var(--text3)', textAlign: 'center' }}>LifeOS v1.0.0 · No server · No tracking</div>
       </div>
     </div>
   );
