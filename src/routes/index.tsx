@@ -90,38 +90,53 @@ type Page = 'dashboard' | 'checklist' | 'analytics' | 'achievements' | 'reflecti
 
 function LifeOS() {
   const today = new Date().toISOString().split('T')[0];
+
   const [habits, setHabits] = useState<Habit[]>(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const s = JSON.parse(raw);
-        if (s.habits) {
-          if (s.lastDate === today) return s.habits;
-          return s.habits.map((h: Habit) => ({ ...h, done: false }));
+    if (typeof window !== 'undefined') {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const s = JSON.parse(raw);
+          if (s.habits) {
+            if (s.lastDate === today) return s.habits;
+            return s.habits.map((h: Habit) => ({ ...h, done: false }));
+          }
         }
-      }
-    } catch { }
+      } catch { }
+    }
     return DEFAULT_HABITS.map(h => ({ ...h }));
   });
+
   const [totalXP, setTotalXP] = useState<number>(() => {
-    try { const raw = localStorage.getItem(STORAGE_KEY); if (raw && JSON.parse(raw).totalXP !== undefined) return JSON.parse(raw).totalXP; } catch { }
+    if (typeof window !== 'undefined') {
+      try { const raw = localStorage.getItem(STORAGE_KEY); if (raw && JSON.parse(raw).totalXP !== undefined) return JSON.parse(raw).totalXP; } catch { }
+    }
     return 0;
   });
+
   const [streak, setStreak] = useState<number>(() => {
-    try { const raw = localStorage.getItem(STORAGE_KEY); if (raw && JSON.parse(raw).streak !== undefined) return JSON.parse(raw).streak; } catch { }
+    if (typeof window !== 'undefined') {
+      try { const raw = localStorage.getItem(STORAGE_KEY); if (raw && JSON.parse(raw).streak !== undefined) return JSON.parse(raw).streak; } catch { }
+    }
     return 0;
   });
+
   const [page, setPage] = useState<Page>('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // ── Theme ──────────────────────────────────────────────────
-  const [theme, setThemeState] = useState<Theme>(() =>
-    (localStorage.getItem('lifeos_theme') as Theme) || 'system'
-  );
+  const [theme, setThemeState] = useState<Theme>(() => {
+    if (typeof window !== 'undefined') {
+      return (localStorage.getItem('lifeos_theme') as Theme) || 'system';
+    }
+    return 'system';
+  });
 
   const setTheme = (t: Theme) => {
     setThemeState(t);
-    localStorage.setItem('lifeos_theme', t);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('lifeos_theme', t);
+    }
   };
 
   useEffect(() => {
