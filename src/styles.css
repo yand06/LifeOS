@@ -186,6 +186,45 @@ body {
 }
 
 /* No mesh background, handled directly in index.tsx */
+
+/* ============================================================
+   FORM CONTROLS — theme-aware select / option
+   ============================================================ */
+
+/* Dark theme (default :root) */
+select {
+  color-scheme: dark;
+  background-color: #13131f;
+  color: #f0f0f5;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: var(--radius-sm);
+  transition: background-color 0.35s ease, color 0.35s ease, border-color 0.35s ease;
+  appearance: auto;
+}
+
+select option {
+  background-color: #13131f;
+  color: #f0f0f5;
+}
+
+select:focus {
+  outline: 2px solid var(--emerald);
+  outline-offset: 1px;
+}
+
+/* Light theme overrides */
+:root.light select {
+  color-scheme: light;
+  background-color: #ffffff;
+  color: #0f172a;
+  border-color: rgba(0, 0, 0, 0.10);
+}
+
+:root.light select option {
+  background-color: #ffffff;
+  color: #0f172a;
+}
+
 /* ============================================================
    LAYOUT
    ============================================================ */
@@ -768,28 +807,62 @@ body {
   gap: 10px;
 }
 
+/* ── Swipe container — card shell ── */
+.habit-swipe-container {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius);
+  box-shadow: var(--glass-shadow);
+  transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.22s ease;
+}
+
+.habit-swipe-container:hover {
+  transform: translateY(-2px) scale(1.012);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.08) inset,
+    0 2px 0 0 rgba(255, 255, 255, 0.20) inset,
+    0 16px 48px -6px rgba(0, 0, 0, 0.40),
+    0 6px 16px -3px rgba(0, 0, 0, 0.24);
+}
+
+:root.light .habit-swipe-container:hover {
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.95) inset,
+    0 2px 0 0 rgba(255, 255, 255, 1.00) inset,
+    0 16px 48px -6px rgba(0, 0, 0, 0.12),
+    0 6px 16px -3px rgba(0, 0, 0, 0.07);
+}
+
+/* ── Inner sliding card ── */
 .habit-item {
   display: flex;
   align-items: center;
-  gap: 12px;
   background: var(--glass-bg);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
-
-  /* Thin glossy border simulating glass cut with top-left lighting */
   border: 1px solid var(--glass-border);
   border-top: 1px solid var(--glass-border-t);
   border-left: 1px solid var(--glass-border-l);
-
-  box-shadow: var(--glass-shadow);
-  border-radius: var(--radius);
-  padding: 14px 16px;
-  /* Spacing refinement */
   cursor: pointer;
-  transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.22s ease;
   position: relative;
   overflow: hidden;
   isolation: isolate;
+  /* transform & transition are set inline by React for swipe */
+  will-change: transform;
+  /* fill the container fully so the glass covers the rounded corners */
+  min-height: 100%;
+  width: calc(100% + 88px);
+  padding: 0;
+}
+
+.habit-main-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 0 0 calc(100% - 88px);
+  width: calc(100% - 88px);
+  padding: 14px 16px;
+  box-sizing: border-box;
 }
 
 /* Specular top-half shimmer */
@@ -817,22 +890,7 @@ body {
   z-index: 2;
 }
 
-.habit-item:hover {
-  transform: translateY(-2px) scale(1.012);
-  box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.08) inset,
-    0 2px 0 0 rgba(255, 255, 255, 0.20) inset,
-    0 16px 48px -6px rgba(0, 0, 0, 0.40),
-    0 6px 16px -3px rgba(0, 0, 0, 0.24);
-}
 
-:root.light .habit-item:hover {
-  box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.95) inset,
-    0 2px 0 0 rgba(255, 255, 255, 1.00) inset,
-    0 16px 48px -6px rgba(0, 0, 0, 0.12),
-    0 6px 16px -3px rgba(0, 0, 0, 0.07);
-}
 
 .habit-item.done {
   opacity: .65;
@@ -926,6 +984,170 @@ body {
   background: var(--blue-d);
   color: var(--blue);
 }
+
+
+
+/* ── Swipe-to-reveal panel (inline) ── */
+.swipe-reveal-actions-inline {
+  display: flex;
+  gap: 8px;
+  width: 88px;
+  flex-shrink: 0;
+  justify-content: center;
+  align-items: center;
+  padding: 0 12px 0 4px;
+  box-sizing: border-box;
+  height: 100%;
+  z-index: 10;
+}
+
+.swipe-btn-inline {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  border: 1px solid var(--border2);
+  background: var(--bg4);
+  color: var(--text2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.swipe-btn-inline:hover {
+  transform: scale(1.1);
+}
+
+.swipe-btn-inline.edit:hover,
+.swipe-btn-inline.edit:active {
+  background: var(--blue-d);
+  color: var(--blue);
+  border-color: var(--blue);
+}
+
+.swipe-btn-inline.delete:hover,
+.swipe-btn-inline.delete:active {
+  background: var(--red-d);
+  color: var(--red);
+  border-color: var(--red);
+}
+
+.swipe-btn-inline:active {
+  transform: scale(0.92);
+}
+
+/* Shrink the hover lift when the container is swiped open */
+.habit-swipe-container.swiped:hover {
+  transform: none;
+}
+
+/* ── Inline edit panel ── */
+.habit-item.editing {
+  flex-wrap: wrap;
+  overflow: visible;
+  cursor: default;
+}
+
+.habit-edit-panel {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  align-items: center;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  animation: slideDown 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.habit-edit-input {
+  flex: 1;
+  min-width: 120px;
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  color: var(--text);
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  transition: border-color 0.15s ease;
+}
+
+.habit-edit-input.xp {
+  width: 60px;
+  flex: none;
+  min-width: 60px;
+}
+
+.habit-edit-input:focus {
+  outline: none;
+  border-color: var(--blue);
+}
+
+.habit-edit-select {
+  padding: 6px 8px;
+  font-size: 12px;
+  border-radius: var(--radius-sm);
+}
+
+.habit-edit-select.icon {
+  width: 64px;
+}
+
+.habit-edit-btns {
+  display: flex;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.habit-edit-save,
+.habit-edit-cancel {
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background 0.15s ease, opacity 0.15s ease;
+}
+
+.habit-edit-save {
+  background: var(--emerald);
+  color: #000;
+}
+
+.habit-edit-save:hover {
+  opacity: 0.85;
+}
+
+.habit-edit-cancel {
+  background: var(--bg4);
+  color: var(--text2);
+  border-color: var(--border2);
+}
+
+.habit-edit-cancel:hover {
+  background: var(--red-d);
+  color: var(--red);
+  border-color: var(--red);
+}
+
+/* Light theme tweaks */
+:root.light .habit-edit-input {
+  background: rgba(255, 255, 255, 0.80);
+  border-color: rgba(0, 0, 0, 0.12);
+}
+
+:root.light .habit-edit-input:focus {
+  border-color: var(--blue);
+}
+
+
 
 /* ── Analytics grid ── */
 .analytics-grid {

@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Chart, registerables } from "chart.js";
 import {
-  Sunrise, MoonStar, Dumbbell, ShowerHead, BookOpen, Laptop, Globe, Edit3, Moon, Droplet, Salad, Target, Utensils, Building, Coffee, Smartphone, Tv, Flame, Trophy, Ban, ShieldCheck, CheckCircle, Zap, Activity, BarChart2, CheckSquare, LineChart, Award, FileText, Calendar as CalendarIcon, Settings as SettingsIcon, Menu, LayoutDashboard, AlertTriangle, Check, Lock, Frown, Meh, Smile, Download, Upload, Trash2,
+  Sunrise, MoonStar, Dumbbell, ShowerHead, BookOpen, Laptop, Globe, Edit3, Moon, Droplet, Salad, Target, Utensils, Building, Coffee, Smartphone, Tv, Flame, Trophy, Ban, ShieldCheck, CheckCircle, Zap, Activity, BarChart2, CheckSquare, LineChart, Award, FileText, Calendar as CalendarIcon, Settings as SettingsIcon, Menu, LayoutDashboard, AlertTriangle, Check, Lock, Frown, Meh, Smile, Download, Upload, Trash2, Pencil,
   Sun, MonitorSmartphone
 } from 'lucide-react';
 
@@ -181,6 +181,22 @@ function LifeOS() {
     setHabits([...habits, { id: newId, title, cat, xp, icon, done: false }]);
   };
 
+  const deleteHabit = (id: number) => {
+    setHabits(prev => {
+      const target = prev.find(h => h.id === id);
+      if (target?.done) setTotalXP(x => Math.max(0, x - target.xp));
+      return prev.filter(h => h.id !== id);
+    });
+  };
+
+  const updateHabit = (id: number, title: string, cat: Cat, xp: number, icon: string) => {
+    setHabits(prev => prev.map(h => {
+      if (h.id !== id) return h;
+      if (h.done) setTotalXP(x => Math.max(0, x - h.xp + xp));
+      return { ...h, title, cat, xp, icon };
+    }));
+  };
+
   const dateStr = new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
   const doneSorted = [...habits.filter(h => h.done)].sort((a, b) => Math.abs(b.xp) - Math.abs(a.xp));
@@ -243,7 +259,7 @@ function LifeOS() {
           <Dashboard {...{ dateStr, streak, score, rank, goodDone, badDone, naturalDone, lv, lvp, totalXP, doneCount, pct, habits, toggle, topGood, topBad, winning, setPage }} />
         )}
         {page === 'checklist' && (
-          <Checklist {...{ score, rank, doneCount, pct, goodDone, badDone, naturalDone, habits, toggle, addHabit }} />
+          <Checklist {...{ score, rank, doneCount, pct, goodDone, badDone, naturalDone, habits, toggle, addHabit, deleteHabit, updateHabit }} />
         )}
         {page === 'analytics' && <Analytics {...{ score, goodDone, badDone, habits, dateStr }} />}
         {page === 'achievements' && <Achievements />}
@@ -259,21 +275,154 @@ function NavBtn({ icon, label, active, onClick }: { icon: React.ReactNode; label
   return <button className={`nav-item${active ? ' active' : ''}`} onClick={onClick}><span className="ni" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{icon}</span> {label}</button>;
 }
 
-function HabitItem({ h, onToggle }: { h: Habit; onToggle: (id: number) => void }) {
+const ICONS = ['🌅', '🕌', '💪', '🚿', '📚', '💻', '🌐', '✍️', '😴', '💧', '🥗', '🎯', '🍳', '🍱', '🍽️', '🏢', '😌', '📱', '📺', '🌙', '🔥', '🏆', '🚫', '🛡️', '✅', '⚡', '⚠️', '📊'];
+
+const REVEAL_WIDTH = 88;
+
+function HabitItem({ h, onToggle, onDelete, onUpdate }: {
+  h: Habit;
+  onToggle: (id: number) => void;
+  onDelete?: (id: number) => void;
+  onUpdate?: (id: number, title: string, cat: Cat, xp: number, icon: string) => void;
+}) {
   const catLabel = h.cat === 'good' ? 'cat-good' : h.cat === 'bad' ? 'cat-bad' : 'cat-natural';
-  const catText = h.cat === 'good' ? 'Good' : h.cat === 'bad' ? 'Bad' : 'Natural';
-  const xpSign = h.xp > 0 ? '+' : '';
+  const catText  = h.cat === 'good' ? 'Good'     : h.cat === 'bad' ? 'Bad'     : 'Natural';
+  const xpSign   = h.xp > 0 ? '+' : '';
+
+  // ── Edit state ────────────────────────────────────────────
+  const [editing,   setEditing]   = useState(false);
+  const [editTitle, setEditTitle] = useState(h.title);
+  const [editCat,   setEditCat]   = useState<Cat>(h.cat);
+  const [editXp,    setEditXp]    = useState(h.xp);
+  const [editIcon,  setEditIcon]  = useState(h.icon);
+
+  const handleSave = (e: React.FormEvent) => {
+    e.preventDefault(); e.stopPropagation();
+    if (!editTitle.trim()) return;
+    onUpdate?.(h.id, editTitle.trim(), editCat, editXp, editIcon);
+    setEditing(false);
+  };
+  const handleCancel = (e: React.MouseEvent) => { e.stopPropagation(); setEditing(false); };
+
+  // ── Swipe state ───────────────────────────────────────────
+  const [swipeX,        setSwipeX]        = useState(0);
+  const [swipeOpen,     setSwipeOpen]     = useState(false);
+  const [transitioning, setTransitioning] = useState(false);
+  const touchStartX   = useRef(0);
+  const touchStartY   = useRef(0);
+  const touchDragging = useRef(false);
+  const axisLocked    = useRef<'h' | 'v' | null>(null);
+  const swipeGuard    = useRef(false);   // suppresses accidental click after a swipe
+
+  const closeSwipe = () => { setTransitioning(true); setSwipeX(0); setSwipeOpen(false); };
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    if (editing) return;
+    touchStartX.current   = e.touches[0].clientX;
+    touchStartY.current   = e.touches[0].clientY;
+    touchDragging.current = false;
+    axisLocked.current    = null;
+    setTransitioning(false);
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    if (editing) return;
+    const dx = e.touches[0].clientX - touchStartX.current;
+    const dy = e.touches[0].clientY - touchStartY.current;
+    if (!axisLocked.current && (Math.abs(dx) > 4 || Math.abs(dy) > 4)) {
+      axisLocked.current = Math.abs(dx) >= Math.abs(dy) ? 'h' : 'v';
+    }
+    if (axisLocked.current !== 'h') return;   // let vertical scroll through
+    e.preventDefault();
+    touchDragging.current = true;
+    const base = swipeOpen ? -REVEAL_WIDTH : 0;
+    setSwipeX(Math.max(-REVEAL_WIDTH, Math.min(0, base + dx)));
+  };
+
+  const onTouchEnd = () => {
+    if (!touchDragging.current) return;
+    swipeGuard.current = true;
+    setTransitioning(true);
+    const shouldOpen = swipeX < -(REVEAL_WIDTH * 0.4);
+    setSwipeX(shouldOpen ? -REVEAL_WIDTH : 0);
+    setSwipeOpen(shouldOpen);
+    touchDragging.current = false;
+    requestAnimationFrame(() => { swipeGuard.current = false; });
+  };
+
+  // Swipe-action helpers
+  const swipeEdit = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    closeSwipe();
+    setTimeout(() => { setEditTitle(h.title); setEditCat(h.cat); setEditXp(h.xp); setEditIcon(h.icon); setEditing(true); }, 180);
+  };
+  const swipeDelete = (e: React.MouseEvent) => { e.stopPropagation(); closeSwipe(); onDelete?.(h.id); };
+
+  const canSwipe = !!(onDelete || onUpdate);
+
   return (
-    <div className={`habit-item${h.done ? ' done' : ''}`} onClick={() => onToggle(h.id)}>
-      <div className={`checkbox${h.done ? ' checked ' + h.cat : ''}`}>{h.done ? <Check size={12} strokeWidth={3} /> : ''}</div>
-      <div className="habit-info">
-        <div className="habit-title" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>{renderIcon(h.icon, 14)} {h.title}</div>
-        <div className={`habit-xp ${h.cat}`}>{xpSign}{h.xp} XP</div>
+    <div
+      className={`habit-swipe-container${swipeOpen ? ' swiped' : ''}`}
+      onTouchStart={canSwipe ? onTouchStart : undefined}
+      onTouchMove={canSwipe ? onTouchMove : undefined}
+      onTouchEnd={canSwipe ? onTouchEnd : undefined}
+    >
+      {/* Sliding habit card */}
+      <div
+        className={`habit-item${h.done ? ' done' : ''}${editing ? ' editing' : ''}`}
+        style={{
+          transform:  `translateX(${swipeX}px)`,
+          transition: transitioning ? 'transform 0.32s cubic-bezier(0.34, 1.56, 0.64, 1)' : 'none',
+        }}
+        onClick={() => {
+          if (swipeGuard.current) return;
+          if (swipeOpen) { closeSwipe(); return; }
+          if (!editing) onToggle(h.id);
+        }}
+      >
+        <div className="habit-main-content" style={{ flexWrap: editing ? 'wrap' : 'nowrap' }}>
+          <div className={`checkbox${h.done ? ' checked ' + h.cat : ''}`}>{h.done ? <Check size={12} strokeWidth={3} /> : ''}</div>
+          <div className="habit-info">
+            <div className="habit-title" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>{renderIcon(h.icon, 14)} {h.title}</div>
+            <div className={`habit-xp ${h.cat}`}>{xpSign}{h.xp} XP</div>
+          </div>
+          <div className={`cat-badge ${catLabel}`}>{catText}</div>
+
+          {/* Inline edit panel */}
+          {editing && (
+            <form className="habit-edit-panel" onSubmit={handleSave} onClick={e => e.stopPropagation()}>
+              <input    id={`habit-edit-title-${h.id}`} className="habit-edit-input"       value={editTitle} onChange={e => setEditTitle(e.target.value)} placeholder="Habit title..." autoFocus />
+              <select   id={`habit-edit-cat-${h.id}`}   className="habit-edit-select"      value={editCat}   onChange={e => setEditCat(e.target.value as Cat)}>
+                <option value="good">Good (+)</option><option value="natural">Natural</option><option value="bad">Bad (−)</option>
+              </select>
+              <input    id={`habit-edit-xp-${h.id}`}    className="habit-edit-input xp"    value={editXp}    onChange={e => setEditXp(Number(e.target.value))} type="number" title="XP value" />
+              <select   id={`habit-edit-icon-${h.id}`}  className="habit-edit-select icon" value={editIcon}  onChange={e => setEditIcon(e.target.value)} title="Icon">
+                {ICONS.map(ico => <option key={ico} value={ico}>{ico}</option>)}
+              </select>
+              <div className="habit-edit-btns">
+                <button type="submit" className="habit-edit-save">Save</button>
+                <button type="button" className="habit-edit-cancel" onClick={handleCancel}>Cancel</button>
+              </div>
+            </form>
+          )}
+        </div>
+
+        {/* Inline action buttons — revealed horizontally inside the swipe container */}
+        {canSwipe && (
+          <div className="swipe-reveal-actions-inline" onClick={e => e.stopPropagation()}>
+            <button id={`swipe-edit-${h.id}`}   className="swipe-btn-inline edit"   onClick={swipeEdit}   aria-label="Edit habit">
+              <Pencil size={13} />
+            </button>
+            <button id={`swipe-delete-${h.id}`} className="swipe-btn-inline delete" onClick={swipeDelete} aria-label="Delete habit">
+              <Trash2 size={13} />
+            </button>
+          </div>
+        )}
       </div>
-      <div className={`cat-badge ${catLabel}`}>{catText}</div>
     </div>
   );
 }
+
 
 function Dashboard(p: any) {
   const { dateStr, streak, score, rank, goodDone, badDone, naturalDone, lv, lvp, totalXP, doneCount, pct, habits, toggle, topGood, topBad, winning, setPage } = p;
@@ -460,7 +609,7 @@ function Dashboard(p: any) {
   );
 }
 
-function Checklist({ score, rank, doneCount, pct, goodDone, badDone, naturalDone, habits, toggle, addHabit }: any) {
+function Checklist({ score, rank, doneCount, pct, goodDone, badDone, naturalDone, habits, toggle, addHabit, deleteHabit, updateHabit }: any) {
   const [newTitle, setNewTitle] = useState('');
   const [newCat, setNewCat] = useState<Cat>('good');
   const [newXp, setNewXp] = useState(10);
@@ -502,22 +651,22 @@ function Checklist({ score, rank, doneCount, pct, goodDone, badDone, naturalDone
           <div className="mini-stat"><span className="dot dot-blue" /><span className="stat-val">{naturalDone}</span><span className="stat-lbl">&nbsp;Natural</span></div>
         </div>
       </div>
-      <ChecklistSection title={<><CheckCircle size={16} /> Good Habits</>} color="var(--emerald)" items={good} toggle={toggle} />
-      <ChecklistSection title={<><Activity size={16} /> Natural Activities</>} color="var(--blue)" items={nat} toggle={toggle} />
-      <ChecklistSection title={<><AlertTriangle size={16} /> Bad Habits (tracked)</>} color="var(--red)" items={bad} toggle={toggle} />
+      <ChecklistSection title={<><CheckCircle size={16} /> Good Habits</>} color="var(--emerald)" items={good} toggle={toggle} onDelete={deleteHabit} onUpdate={updateHabit} />
+      <ChecklistSection title={<><Activity size={16} /> Natural Activities</>} color="var(--blue)" items={nat} toggle={toggle} onDelete={deleteHabit} onUpdate={updateHabit} />
+      <ChecklistSection title={<><AlertTriangle size={16} /> Bad Habits (tracked)</>} color="var(--red)" items={bad} toggle={toggle} onDelete={deleteHabit} onUpdate={updateHabit} />
 
       <div className="section" style={{ marginTop: 30 }}>
         <div className="section-header"><div className="section-title">Add New Habit</div></div>
         <form onSubmit={handleAdd} style={{ display: 'flex', gap: 10, flexWrap: 'wrap', background: 'var(--bg2)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', padding: 16, borderRadius: 'var(--radius)', border: '1px solid var(--border)', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
           <input placeholder="Habit title..." value={newTitle} onChange={e => setNewTitle(e.target.value)} style={{ flex: 1, minWidth: 200, background: 'var(--bg3)', border: '1px solid var(--border)', color: 'var(--text)', padding: '8px 12px', borderRadius: 'var(--radius-sm)' }} />
-          <select value={newCat} onChange={e => setNewCat(e.target.value as Cat)} style={{ background: 'var(--bg3)', border: '1px solid var(--border)', color: 'var(--text)', padding: '8px 12px', borderRadius: 'var(--radius-sm)' }}>
+          <select value={newCat} onChange={e => setNewCat(e.target.value as Cat)} style={{ padding: '8px 12px' }}>
             <option value="good">Good Habit (+)</option>
             <option value="natural">Natural (Neutral)</option>
             <option value="bad">Bad Habit (-)</option>
           </select>
           <input type="number" value={newXp} onChange={e => setNewXp(Number(e.target.value))} style={{ width: 80, background: 'var(--bg3)', border: '1px solid var(--border)', color: 'var(--text)', padding: '8px 12px', borderRadius: 'var(--radius-sm)' }} title="XP Reward" />
-          <select value={newIcon} onChange={e => setNewIcon(e.target.value)} style={{ width: 80, background: 'var(--bg3)', border: '1px solid var(--border)', color: 'var(--text)', padding: '8px 12px', borderRadius: 'var(--radius-sm)' }} title="Select Icon">
-            {['🌅', '🕌', '💪', '🚿', '📚', '💻', '🌐', '✍️', '😴', '💧', '🥗', '🎯', '🍳', '🍱', '🍽️', '🏢', '😌', '📱', '📺', '🌙', '🔥', '🏆', '🚫', '🛡️', '✅', '⚡', '⚠️', '📊'].map(ico => <option key={ico} value={ico}>{ico}</option>)}
+          <select value={newIcon} onChange={e => setNewIcon(e.target.value)} style={{ width: 80, padding: '8px 12px' }} title="Select Icon">
+            {ICONS.map(ico => <option key={ico} value={ico}>{ico}</option>)}
           </select>
           <button type="submit" style={{ background: 'var(--emerald)', color: '#000', border: 'none', padding: '8px 16px', borderRadius: 'var(--radius-sm)', fontWeight: 600, cursor: 'pointer' }}>Add Habit</button>
         </form>
@@ -526,11 +675,18 @@ function Checklist({ score, rank, doneCount, pct, goodDone, badDone, naturalDone
   );
 }
 
-function ChecklistSection({ title, color, items, toggle }: { title: React.ReactNode; color: string; items: Habit[]; toggle: (id: number) => void }) {
+function ChecklistSection({ title, color, items, toggle, onDelete, onUpdate }: {
+  title: React.ReactNode;
+  color: string;
+  items: Habit[];
+  toggle: (id: number) => void;
+  onDelete?: (id: number) => void;
+  onUpdate?: (id: number, title: string, cat: Cat, xp: number, icon: string) => void;
+}) {
   return (
     <div className="section">
       <div className="section-header"><div className="section-title" style={{ color, display: 'flex', alignItems: 'center', gap: 6 }}>{title}</div></div>
-      <div className="checklist-grid">{items.map(h => <HabitItem key={h.id} h={h} onToggle={toggle} />)}</div>
+      <div className="checklist-grid">{items.map(h => <HabitItem key={h.id} h={h} onToggle={toggle} onDelete={onDelete} onUpdate={onUpdate} />)}</div>
     </div>
   );
 }
