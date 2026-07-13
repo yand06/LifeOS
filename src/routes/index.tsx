@@ -210,7 +210,7 @@ function LifeOS() {
       <div className="mobile-topbar">
         <button className="menu-btn" onClick={() => setSidebarOpen(true)}><Menu size={24} /></button>
         <div className="logo" style={{ margin: 0, padding: 0 }}>
-          <div style={{ width: 34, height: 34, padding: 4, background: 'rgba(255, 255, 255, 0.05)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}>
+          <div style={{ width: 44, height: 44, padding: 2, background: 'rgba(255, 255, 255, 0.05)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}>
             <img src="/icon.png" alt="LifeOS Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
           </div>
           <div className="logo-text" style={{ fontSize: 18 }}>LifeOS</div>
@@ -219,7 +219,7 @@ function LifeOS() {
       {sidebarOpen && <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)} />}
       <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
         <div className="logo">
-          <div style={{ width: 44, height: 44, padding: 6, background: 'rgba(255, 255, 255, 0.05)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}>
+          <div style={{ width: 54, height: 54, padding: 2, background: 'rgba(255, 255, 255, 0.05)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}>
             <img src="/icon.png" alt="LifeOS Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
           </div>
           <div>
@@ -286,15 +286,15 @@ function HabitItem({ h, onToggle, onDelete, onUpdate }: {
   onUpdate?: (id: number, title: string, cat: Cat, xp: number, icon: string) => void;
 }) {
   const catLabel = h.cat === 'good' ? 'cat-good' : h.cat === 'bad' ? 'cat-bad' : 'cat-natural';
-  const catText  = h.cat === 'good' ? 'Good'     : h.cat === 'bad' ? 'Bad'     : 'Natural';
-  const xpSign   = h.xp > 0 ? '+' : '';
+  const catText = h.cat === 'good' ? 'Good' : h.cat === 'bad' ? 'Bad' : 'Natural';
+  const xpSign = h.xp > 0 ? '+' : '';
 
   // ── Edit state ────────────────────────────────────────────
-  const [editing,   setEditing]   = useState(false);
+  const [editing, setEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(h.title);
-  const [editCat,   setEditCat]   = useState<Cat>(h.cat);
-  const [editXp,    setEditXp]    = useState(h.xp);
-  const [editIcon,  setEditIcon]  = useState(h.icon);
+  const [editCat, setEditCat] = useState<Cat>(h.cat);
+  const [editXp, setEditXp] = useState(h.xp);
+  const [editIcon, setEditIcon] = useState(h.icon);
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault(); e.stopPropagation();
@@ -305,23 +305,23 @@ function HabitItem({ h, onToggle, onDelete, onUpdate }: {
   const handleCancel = (e: React.MouseEvent) => { e.stopPropagation(); setEditing(false); };
 
   // ── Swipe state ───────────────────────────────────────────
-  const [swipeX,        setSwipeX]        = useState(0);
-  const [swipeOpen,     setSwipeOpen]     = useState(false);
+  const [swipeX, setSwipeX] = useState(0);
+  const [swipeOpen, setSwipeOpen] = useState(false);
   const [transitioning, setTransitioning] = useState(false);
-  const touchStartX   = useRef(0);
-  const touchStartY   = useRef(0);
+  const touchStartX = useRef(0);
+  const touchStartY = useRef(0);
   const touchDragging = useRef(false);
-  const axisLocked    = useRef<'h' | 'v' | null>(null);
-  const swipeGuard    = useRef(false);   // suppresses accidental click after a swipe
+  const axisLocked = useRef<'h' | 'v' | null>(null);
+  const swipeGuard = useRef(false);   // suppresses accidental click after a swipe
 
   const closeSwipe = () => { setTransitioning(true); setSwipeX(0); setSwipeOpen(false); };
 
   const onTouchStart = (e: React.TouchEvent) => {
     if (editing) return;
-    touchStartX.current   = e.touches[0].clientX;
-    touchStartY.current   = e.touches[0].clientY;
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
     touchDragging.current = false;
-    axisLocked.current    = null;
+    axisLocked.current = null;
     setTransitioning(false);
   };
 
@@ -371,7 +371,7 @@ function HabitItem({ h, onToggle, onDelete, onUpdate }: {
       <div
         className={`habit-item${h.done ? ' done' : ''}${editing ? ' editing' : ''}`}
         style={{
-          transform:  `translateX(${swipeX}px)`,
+          transform: `translateX(${swipeX}px)`,
           transition: transitioning ? 'transform 0.32s cubic-bezier(0.34, 1.56, 0.64, 1)' : 'none',
         }}
         onClick={() => {
@@ -391,12 +391,12 @@ function HabitItem({ h, onToggle, onDelete, onUpdate }: {
           {/* Inline edit panel */}
           {editing && (
             <form className="habit-edit-panel" onSubmit={handleSave} onClick={e => e.stopPropagation()}>
-              <input    id={`habit-edit-title-${h.id}`} className="habit-edit-input"       value={editTitle} onChange={e => setEditTitle(e.target.value)} placeholder="Habit title..." autoFocus />
-              <select   id={`habit-edit-cat-${h.id}`}   className="habit-edit-select"      value={editCat}   onChange={e => setEditCat(e.target.value as Cat)}>
+              <input id={`habit-edit-title-${h.id}`} className="habit-edit-input" value={editTitle} onChange={e => setEditTitle(e.target.value)} placeholder="Habit title..." autoFocus />
+              <select id={`habit-edit-cat-${h.id}`} className="habit-edit-select" value={editCat} onChange={e => setEditCat(e.target.value as Cat)}>
                 <option value="good">Good (+)</option><option value="natural">Natural</option><option value="bad">Bad (−)</option>
               </select>
-              <input    id={`habit-edit-xp-${h.id}`}    className="habit-edit-input xp"    value={editXp}    onChange={e => setEditXp(Number(e.target.value))} type="number" title="XP value" />
-              <select   id={`habit-edit-icon-${h.id}`}  className="habit-edit-select icon" value={editIcon}  onChange={e => setEditIcon(e.target.value)} title="Icon">
+              <input id={`habit-edit-xp-${h.id}`} className="habit-edit-input xp" value={editXp} onChange={e => setEditXp(Number(e.target.value))} type="number" title="XP value" />
+              <select id={`habit-edit-icon-${h.id}`} className="habit-edit-select icon" value={editIcon} onChange={e => setEditIcon(e.target.value)} title="Icon">
                 {ICONS.map(ico => <option key={ico} value={ico}>{ico}</option>)}
               </select>
               <div className="habit-edit-btns">
@@ -410,7 +410,7 @@ function HabitItem({ h, onToggle, onDelete, onUpdate }: {
         {/* Inline action buttons — revealed horizontally inside the swipe container */}
         {canSwipe && (
           <div className="swipe-reveal-actions-inline" onClick={e => e.stopPropagation()}>
-            <button id={`swipe-edit-${h.id}`}   className="swipe-btn-inline edit"   onClick={swipeEdit}   aria-label="Edit habit">
+            <button id={`swipe-edit-${h.id}`} className="swipe-btn-inline edit" onClick={swipeEdit} aria-label="Edit habit">
               <Pencil size={13} />
             </button>
             <button id={`swipe-delete-${h.id}`} className="swipe-btn-inline delete" onClick={swipeDelete} aria-label="Delete habit">
